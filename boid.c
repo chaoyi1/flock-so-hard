@@ -61,9 +61,13 @@ Vector *Align(Boid **boids, int boidsSize, float percepRadius, float maxForce, f
         res->x = res->x - boid->vel.x;
         res->y = res->y - boid->vel.y;
 
-        // Limit acceleration
-        res->x = res->x >= maxForce ? maxForce : res->x;
-        res->y = res->y >= maxForce ? maxForce : res->y;
+        // Rescale vector when magnitude of force is greater than max force allowed
+        magSquared = (res->x * res->x) + (res->y * res->y);
+        magnitude = sqrt(magSquared);
+        if (magnitude > maxForce) {
+            res->x = res->x * maxForce / magnitude;
+            res->y = res->y * maxForce / magnitude;
+        }
     }
 
     return res;
@@ -98,13 +102,64 @@ Vector *Cohesion(Boid **boids, int boidsSize, float percepRadius, float maxForce
         res->x = res->x * maxSpeed / magnitude;
         res->y = res->y * maxSpeed / magnitude;
 
-        // // Steering
+        // Steering
         res->x = res->x - boid->vel.x;
         res->y = res->y - boid->vel.y;
 
-        // Limit acceleration
-        res->x = res->x >= maxForce ? maxForce : res->x;
-        res->y = res->y >= maxForce ? maxForce : res->y;
+        // Rescale vector when magnitude of force is greater than max force allowed
+        magSquared = (res->x * res->x) + (res->y * res->y);
+        magnitude = sqrt(magSquared);
+        if (magnitude > maxForce) {
+            res->x = res->x * maxForce / magnitude;
+            res->y = res->y * maxForce / magnitude;
+        }
+    }
+    return res;
+}
+
+Vector *Separation(Boid **boids, int boidsSize, float percepRadius, float maxForce, float maxSpeed, Boid* boid)
+{
+    Vector *res = malloc(sizeof(Vector));
+    int numberInRadius = 0;
+    for (int i = 0; i < boidsSize; i++) {
+        Boid *other = boids[i];
+        if (other != boid) {
+            float dist = CalcDist(boid, other);
+            if (dist < percepRadius) {
+                float dx;
+                float dy;
+                dx = boid->pos.x - other->pos.x;
+                dy = boid->pos.y - other->pos.y;
+                dx = dx / (dist * dist);
+                dy = dy / (dist * dist);
+                res->x += dx;
+                res->y += dy;
+                numberInRadius += 1;
+            }
+        }
+    }
+    if (numberInRadius > 0) {
+        res->x = res->x / numberInRadius;
+        res->y = res->y / numberInRadius;
+
+        // Change magnitude of desired velocity to a max value
+        // without changing the direction
+        float magSquared = (res->x * res->x) + (res->y * res->y);
+        float magnitude = sqrt(magSquared);
+        res->x = res->x * maxSpeed / magnitude;
+        res->y = res->y * maxSpeed / magnitude;
+
+        // // Steering
+        res->x = res->x - boid->vel.x;
+        res->y = res->y - boid->vel.y;
+        
+        // Rescale vector when magnitude of force is greater than max force allowed
+        magSquared = (res->x * res->x) + (res->y * res->y);
+        magnitude = sqrt(magSquared);
+        if (magnitude > maxForce) {
+            res->x = res->x * maxForce / magnitude;
+            res->y = res->y * maxForce / magnitude;
+        }
     }
     return res;
 }
@@ -114,10 +169,12 @@ void CalculateNetEffect(Boid **boids, int boidsSize, float percepRadius, float m
 {
     Vector *alignment = Align(boids, boidsSize, percepRadius, maxForce, maxSpeed, boid);
     Vector *cohesion = Cohesion(boids, boidsSize, percepRadius, maxForce, maxSpeed, boid);
-    boid->accel.x += alignment->x + cohesion->x;
-    boid->accel.y += alignment->y + cohesion->y;
+    Vector *separation = Separation(boids, boidsSize, percepRadius, maxForce, maxSpeed, boid);
+    boid->accel.x += alignment->x + cohesion->x + separation->x;
+    boid->accel.y += alignment->y + cohesion->y + separation->y;
     free(cohesion);
     free(alignment);
+    free(separation);
 }
 
 void UpdateBoid(float maxSpeed, Boid *boid)
@@ -127,10 +184,12 @@ void UpdateBoid(float maxSpeed, Boid *boid)
     boid->vel.x = boid->vel.x + boid->accel.x;
     boid->vel.y = boid->vel.y + boid->accel.y;
 
-    // Speed limit
-    boid->vel.x = boid->vel.x >= maxSpeed ? maxSpeed : boid->vel.x;
-    boid->vel.y = boid->vel.y >= maxSpeed ? maxSpeed : boid->vel.y;
-
+    // Rescale if speed exceeds max speed
+    float magnitude = sqrt(boid->vel.x * boid->vel.x + boid->vel.y + boid->vel.y);
+    if (magnitude > maxSpeed) {
+        boid->vel.x = boid->vel.x * maxSpeed / magnitude;
+        boid->vel.y = boid->vel.y * maxSpeed / magnitude;
+    }
     // Reset acceleration because force doesnt accumulate over time
     boid->accel.x = 0.0;
     boid->accel.y = 0.0;

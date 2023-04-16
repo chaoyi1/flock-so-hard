@@ -6,7 +6,7 @@
 #include "boid.h"
 
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+#define SCREEN_HEIGHT  600
 
 #define RADIUS 5
 
@@ -14,7 +14,7 @@
 
 #define PERCEPTION_RADIUS 50
 
-#define MAX_FORCE 0.2
+#define MAX_FORCE 1
 #define MAX_SPEED 4
 
 void RenderBoid(Boid *boid)
