@@ -1,5 +1,4 @@
-PKGS=sdl2
-CFLAGS=-Wall -ggdb -std=c11 -pedantic `pkg-config --cflags sdl2`
-LIBS=`pkg-config --libs sdl2`
+CFLAGS=-Wall -ggdb -std=c11 -pedantic
+LIBS= -lraylib -lm
 flockin: main.c
-		 $(CC) $(CFLAGS) -o flockin main.c $(LIBS)
+		 $(CC) $(CFLAGS) -o flockin main.c boid.c $(LIBS)

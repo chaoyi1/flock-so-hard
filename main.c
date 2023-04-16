@@ -1,58 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <SDL2/SDL.h>
+#include "raylib.h"
+
+#include "boid.h"
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-// Wrapping error code/pointer checking functions compresses code length greatly
-int sdl_check_code(int code) {
-    if (code < 0) {
-        fprintf(stderr, "SDL error: %s\n", SDL_GetError());
-        exit(1);
-    }
-    return code;
-}
+#define BOARD_WIDTH 10
+#define BOARD_HEIGHT 10
 
-void *sdl_check_pointer(void *ptr) {
-    if (ptr == NULL) {
-        fprintf(stderr, "SDL error: %s\n", SDL_GetError());
-        exit(1);
-    }
-    return ptr;
+#define CELL_WIDTH ((float) SCREEN_WIDTH / (float) BOARD_WIDTH)
+#define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) BOARD_HEIGHT)
+
+#define RADIUS 5
+
+#define NUMBER_OF_BOIDS 100
+
+void RenderBoid(Boid *boid)
+{
+    Vector2 boidScreenPosition = (Vector2) {boid->pos.x, boid->pos.y};
+    DrawCircleV(boidScreenPosition, RADIUS, RAYWHITE);
 }
 
 int main(int argc, char const *argv[])
 {
-    
-    sdl_check_code(SDL_Init(SDL_INIT_VIDEO));
 
-    SDL_Window *const window = sdl_check_pointer(SDL_CreateWindow("flock so hard", 
-                                            0, 0,
-                                            SCREEN_WIDTH, SCREEN_HEIGHT,
-                                            SDL_WINDOW_RESIZABLE));
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "flockin");
 
-    SDL_Renderer *const renderer = sdl_check_pointer(SDL_CreateRenderer(window, 
-                                        -1, SDL_RENDERER_ACCELERATED));
+    SetTargetFPS(60);
 
-    int quit = 0;
-    while (!quit) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event) != 0) {
-            switch (event.type) {
-                case SDL_QUIT: {
-                    quit = 1;
-                } break;
-            }
-        }
+    Boid **flocks = calloc(NUMBER_OF_BOIDS, sizeof(Boid));
 
-        // These set of funcs makes a window
-        sdl_check_code(SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255));
-        sdl_check_code(SDL_RenderClear(renderer));
-        SDL_RenderPresent(renderer);
+    for (int i = 0; i < NUMBER_OF_BOIDS; i++) {
+        flocks[i] = (CreateBoid(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2));
     }
 
-    SDL_Quit();
+    while (!WindowShouldClose()) {
+        // Variables should be updated here
+        for (int i = 0; i < NUMBER_OF_BOIDS; i++) {
+            UpdateBoid(flocks[i]);
+        }
+        BeginDrawing();
+        ClearBackground(BLACK);
+        for (int i = 0; i < NUMBER_OF_BOIDS; i++) {
+            RenderBoid(flocks[i]);
+        }
+        EndDrawing();
+    }
+    for (int i = 0; i < NUMBER_OF_BOIDS; i++) {
+            free(flocks[i]);
+    }
+    free(flocks);
+    CloseWindow();
     return 0;
 }
