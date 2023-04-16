@@ -6,15 +6,15 @@ Boid *CreateBoid(float x, float y)
 {
     Boid *b = malloc(sizeof(Boid));
     
-    b->pos.x = rand() % (int) x;
-    b->pos.y =  rand() % (int) y;
+    b->pos.x = ((float)rand()/(float)(RAND_MAX)) * x;
+    b->pos.y =  ((float)rand()/(float)(RAND_MAX)) * y;
     
     const float pi = 4.0 * atan(1.0);
 
     double phi = (double) (rand() * (2.0 * pi)) / (double) (RAND_MAX);
     float vx = (float) cos(phi);
     float vy = (float) sin(phi);
-    float speed = (float) ((rand() % (4 - 2 + 1)) + 2);
+    float speed = (float) ((rand() % (5 - 3 + 1)) + 3);
     b->vel.x = vx * speed;
     b->vel.y = vy * speed;
 
@@ -29,6 +29,36 @@ float CalcDist(Boid *boid, Boid *other)
     float dx = boid->pos.x - other->pos.x;
     float dy = boid->pos.y - other->pos.y;
     return sqrt((dx * dx) + (dy * dy));
+}
+
+void CalculateFinalForceVector(int numberInRadius, float maxForce, float maxSpeed, Boid* boid, Vector* res, int isCohesion)
+{
+    res->x = res->x / numberInRadius;
+    res->y = res->y / numberInRadius;
+
+    if (isCohesion == 1) {
+        res->x = res->x - boid->pos.x;
+        res->y = res->y - boid->pos.y;
+    }
+
+    // Change magnitude of desired velocity to a max value
+    // without changing the direction
+    float magSquared = (res->x * res->x) + (res->y * res->y);
+    float magnitude = sqrt(magSquared);
+    res->x = res->x * maxSpeed / magnitude;
+    res->y = res->y * maxSpeed / magnitude;
+
+    //Steering
+    res->x = res->x - boid->vel.x;
+    res->y = res->y - boid->vel.y;
+    
+    // Rescale vector when magnitude of force is greater than max force allowed
+    magSquared = (res->x * res->x) + (res->y * res->y);
+    magnitude = sqrt(magSquared);
+    if (magnitude > maxForce) {
+        res->x = res->x * maxForce / magnitude;
+        res->y = res->y * maxForce / magnitude;
+    }
 }
 
 Vector *Align(Boid **boids, int boidsSize, float percepRadius, float maxForce, float maxSpeed, Boid* boid)
@@ -47,27 +77,7 @@ Vector *Align(Boid **boids, int boidsSize, float percepRadius, float maxForce, f
         }
     }
     if (numberInRadius > 0) {
-        res->x = res->x / numberInRadius;
-        res->y = res->y / numberInRadius;
-        
-        // Change magnitude of desired velocity to a max value
-        // without changing the direction
-        float magSquared = (res->x * res->x) + (res->y * res->y);
-        float magnitude = sqrt(magSquared);
-        res->x = res->x * maxSpeed / magnitude;
-        res->y = res->y * maxSpeed / magnitude;
-
-        // Steering
-        res->x = res->x - boid->vel.x;
-        res->y = res->y - boid->vel.y;
-
-        // Rescale vector when magnitude of force is greater than max force allowed
-        magSquared = (res->x * res->x) + (res->y * res->y);
-        magnitude = sqrt(magSquared);
-        if (magnitude > maxForce) {
-            res->x = res->x * maxForce / magnitude;
-            res->y = res->y * maxForce / magnitude;
-        }
+        CalculateFinalForceVector(numberInRadius, maxForce, maxSpeed, boid, res, 0);
     }
 
     return res;
@@ -89,30 +99,7 @@ Vector *Cohesion(Boid **boids, int boidsSize, float percepRadius, float maxForce
         }
     }
     if (numberInRadius > 0) {
-        res->x = res->x / numberInRadius;
-        res->y = res->y / numberInRadius;
-        
-        res->x = res->x - boid->pos.x;
-        res->y = res->y - boid->pos.y;
-
-        // Change magnitude of desired velocity to a max value
-        // without changing the direction
-        float magSquared = (res->x * res->x) + (res->y * res->y);
-        float magnitude = sqrt(magSquared);
-        res->x = res->x * maxSpeed / magnitude;
-        res->y = res->y * maxSpeed / magnitude;
-
-        // Steering
-        res->x = res->x - boid->vel.x;
-        res->y = res->y - boid->vel.y;
-
-        // Rescale vector when magnitude of force is greater than max force allowed
-        magSquared = (res->x * res->x) + (res->y * res->y);
-        magnitude = sqrt(magSquared);
-        if (magnitude > maxForce) {
-            res->x = res->x * maxForce / magnitude;
-            res->y = res->y * maxForce / magnitude;
-        }
+        CalculateFinalForceVector(numberInRadius, maxForce, maxSpeed, boid, res, 1);
     }
     return res;
 }
@@ -139,27 +126,7 @@ Vector *Separation(Boid **boids, int boidsSize, float percepRadius, float maxFor
         }
     }
     if (numberInRadius > 0) {
-        res->x = res->x / numberInRadius;
-        res->y = res->y / numberInRadius;
-
-        // Change magnitude of desired velocity to a max value
-        // without changing the direction
-        float magSquared = (res->x * res->x) + (res->y * res->y);
-        float magnitude = sqrt(magSquared);
-        res->x = res->x * maxSpeed / magnitude;
-        res->y = res->y * maxSpeed / magnitude;
-
-        // // Steering
-        res->x = res->x - boid->vel.x;
-        res->y = res->y - boid->vel.y;
-        
-        // Rescale vector when magnitude of force is greater than max force allowed
-        magSquared = (res->x * res->x) + (res->y * res->y);
-        magnitude = sqrt(magSquared);
-        if (magnitude > maxForce) {
-            res->x = res->x * maxForce / magnitude;
-            res->y = res->y * maxForce / magnitude;
-        }
+        CalculateFinalForceVector(numberInRadius, maxForce, maxSpeed, boid, res, 0);
     }
     return res;
 }
@@ -190,6 +157,7 @@ void UpdateBoid(float maxSpeed, Boid *boid)
         boid->vel.x = boid->vel.x * maxSpeed / magnitude;
         boid->vel.y = boid->vel.y * maxSpeed / magnitude;
     }
+
     // Reset acceleration because force doesnt accumulate over time
     boid->accel.x = 0.0;
     boid->accel.y = 0.0;
