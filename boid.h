@@ -14,7 +14,9 @@ typedef struct {
 
 Boid *CreateBoid(float x, float y);
 float CalcDist(Boid *boid, Boid *other);
-void Align(Boid **boids, int boidsSize, float percepRadius, float maxForce, float maxSpeed, Boid* boid);
-void UpdateBoid(Boid *boid);
+Vector *Align(Boid **boids, int boidsSize, float percepRadius, float maxForce, float maxSpeed, Boid* boid);
+Vector *Cohesion(Boid **boids, int boidsSize, float percepRadius, float maxForce, float maxSpeed, Boid* boid);
+void CalculateNetEffect(Boid **boids, int boidsSize, float percepRadius, float maxForce, float maxSpeed, Boid* boid);
+void UpdateBoid(float maxSpeed,Boid *boid);
 
 #endif

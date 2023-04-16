@@ -8,17 +8,11 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-#define BOARD_WIDTH 10
-#define BOARD_HEIGHT 10
-
-#define CELL_WIDTH ((float) SCREEN_WIDTH / (float) BOARD_WIDTH)
-#define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) BOARD_HEIGHT)
-
 #define RADIUS 5
 
 #define NUMBER_OF_BOIDS 100
 
-#define PERCEPTION_RADIUS 40
+#define PERCEPTION_RADIUS 50
 
 #define MAX_FORCE 0.2
 #define MAX_SPEED 4
@@ -62,8 +56,8 @@ int main(int argc, char const *argv[])
         // Variables should be updated here
         for (int i = 0; i < NUMBER_OF_BOIDS; i++) {
             WrapAroundEdge(boids[i]);
-            Align(boids, NUMBER_OF_BOIDS, PERCEPTION_RADIUS, MAX_FORCE, MAX_SPEED, boids[i]);
-            UpdateBoid(boids[i]);
+            CalculateNetEffect(boids, NUMBER_OF_BOIDS, PERCEPTION_RADIUS, MAX_FORCE, MAX_SPEED, boids[i]);
+            UpdateBoid(MAX_SPEED, boids[i]);
         }
         BeginDrawing();
         ClearBackground(BLACK);
