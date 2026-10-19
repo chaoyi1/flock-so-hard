@@ -64,8 +64,8 @@ int main(int argc, char const *argv[])
     int number_of_boids = 1500;
     float perception_range = 160.0f;
     float separation_radius = 40.0f;
-    float cohesion_factor = 0.6f;
-    float alignment_factor = 0.8f;
+    float cohesion_factor = 0.25f;
+    float alignment_factor = 1.5f;
     float speed_limit = 300.0f;
     float x_max = 2560.0f;
     float x_min = 0.0f;
