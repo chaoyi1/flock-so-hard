@@ -17,7 +17,7 @@ Vec2D clamp_magnitude(Vec2D vector, float max_magnitude) {
 }
 
 Vec2D steering_acceleration(Vec2D desired_direction, Vec2D current_velocity, float max_speed, float response_time, float max_acceleration) {
-    float length_sq = dist_squared(desired_direction.x,desired_direction.y);
+    float length_sq = dist_squared(desired_direction.x, desired_direction.y);
     // No desired direction means no steering.
     if (length_sq < 1.0e-12f) {
         return (Vec2D){0};
