@@ -1,7 +1,7 @@
 #include "behaviours.h"
 
 
-Vec2D alignment(BoidsState *state, int num_boids, int boid, float alignment_factor, float perception_range) {
+Vec2D alignment(BoidsState *state, int num_boids, int boid, float perception_range) {
     Vec2D vi = { 0 };
     int neighbour_count = 0;
     for(int i = 0; i < num_boids; i++) {
@@ -15,14 +15,9 @@ Vec2D alignment(BoidsState *state, int num_boids, int boid, float alignment_fact
             }
         }
     }
-    if (neighbour_count == 0) {
-        vi.x = 0.0f;
-        vi.y = 0.0f;
-    } else {
-        vi.x = vi.x / neighbour_count;
-        vi.y = vi.y / neighbour_count;
-        vi.x = (vi.x - state->velocity_x[boid]) * alignment_factor;
-        vi.y = (vi.y - state->velocity_y[boid]) * alignment_factor;
+    if (neighbour_count > 0) {
+        vi.x /= neighbour_count;
+        vi.y /= neighbour_count;
     }
 
     return vi;

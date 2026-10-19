@@ -1,6 +1,6 @@
 #include "behaviours.h"
 
-Vec2D cohesion(BoidsState *state, int num_boids, int boid, float cohesion_factor, float perception_range) {
+Vec2D cohesion(BoidsState *state, int num_boids, int boid, float perception_range) {
     Vec2D ci = { 0 };
     int neighbour_count = 0;
     for(int i = 0; i < num_boids; i++) {
@@ -14,12 +14,9 @@ Vec2D cohesion(BoidsState *state, int num_boids, int boid, float cohesion_factor
             }
         }
     }
-    if (neighbour_count == 0) {
-        ci.x = 0;
-        ci.y = 0;
-    } else {
-        ci.x = (ci.x / neighbour_count) * cohesion_factor;
-        ci.y = (ci.y / neighbour_count) * cohesion_factor;
+    if (neighbour_count > 0) {
+        ci.x /= neighbour_count;
+        ci.y /= neighbour_count;
     }
 
     return ci;

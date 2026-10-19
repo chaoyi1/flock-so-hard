@@ -66,7 +66,11 @@ int main(int argc, char const *argv[])
     float separation_radius = 40.0f;
     float cohesion_factor = 0.25f;
     float alignment_factor = 1.5f;
-    float speed_limit = 300.0f;
+    float separation_factor = 1.5f;
+    float min_speed = 120.0f;
+    float max_speed = 300.0f;
+    float max_acceleration = 600.0f;
+    float steering_response_time = 0.5f;
     float x_max = 2560.0f;
     float x_min = 0.0f;
     float y_max = 1440.0f;
@@ -77,7 +81,11 @@ int main(int argc, char const *argv[])
         .separation_radius = separation_radius,
         .cohesion_factor = cohesion_factor,
         .alignment_factor = alignment_factor,
-        .speed_limit = speed_limit,
+        .separation_factor = separation_factor,
+        .min_speed = min_speed,
+        .max_speed = max_speed,
+        .max_acceleration = max_acceleration,
+        .steering_response_time = steering_response_time,
         .x_max = x_max,
         .x_min = x_min,
         .y_max = y_max,
